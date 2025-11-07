@@ -127,9 +127,8 @@ All files are saved to `eval_analysis_results/<output_name>_<timestamp>/`:
 - `eval_awareness_clusters.json`: Complete cluster data
 - `eval_awareness_clusters_summary.txt`: Cluster summary with top patterns
 
-This is the **recommended workflow** for analyzing eval realism in one command!
+This is the **recommended workflow** for analyzing eval realism of an Inspect eval log in one command!
 
-📖 **See [USAGE_GUIDE.md](USAGE_GUIDE.md) for detailed instructions and examples.**
 
 ---
 
