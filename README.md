@@ -89,7 +89,7 @@ python sample_integration.py partial_transcripts/partial_transcripts_swe_gym_445
 1. Extracts/loads samples from the input file
 2. For each sample, runs comparisons against a leaderboard
 3. Calculates leaderboard placement (rank and percentile)
-4. Saves detailed results to `apollo_leaderboard_placement/`:
+4. Saves detailed results to `map_samples_on_leaderboard/`:
    - `<output_name>.json`: Full comparison data with judge reasoning
    - `<output_name>_summary.txt`: Human-readable placement summary
 
@@ -140,7 +140,7 @@ For standalone clustering analysis of existing placement results:
 python cluster_eval_features.py
 ```
 
-By default, this processes `apollo_leaderboard_placement/explanations_test.json` and saves results to `clusters/explanations_test_clusters.json`. You can modify the input file in the script's `main()` function.
+By default, this processes `map_samples_on_leaderboard/explanations_test.json` and saves results to `clusters/explanations_test_clusters.json`. You can modify the input file in the script's `main()` function.
 
 **What it does:**
 1. Extracts judge arguments from comparison data where samples appeared evaluation-like
@@ -156,6 +156,35 @@ By default, this processes `apollo_leaderboard_placement/explanations_test.json`
   - Top 10 topics with representative examples
   - Useful for quick overview of evaluation patterns
 
+
+### 4. Run Sanity Checks
+
+The project includes several sanity checks to validate leaderboards and rating systems.
+
+**Compare Two Leaderboards:**
+
+```bash
+python sanity_checks/leaderboard_correlation_test.py <leaderboard1.json> <leaderboard2.json>
+```
+
+Example:
+```bash
+python sanity_checks/leaderboard_correlation_test.py \
+    leaderboards/grok_4_fast_leaderboard.json \
+    leaderboards/grok_4_fast_cleaned_leaderboard_v1.json
+```
+
+**What it does:**
+1. Computes Spearman rank correlation between two leaderboards
+2. Identifies common samples and compares their rankings
+3. Outputs correlation coefficient, p-value, and significance
+4. Displays an interactive scatter plot showing ranking correlation
+
+**Use cases:**
+- Validate consistency between leaderboards from different models
+- Check if cleaning/processing affected rankings
+- Compare leaderboards computed at different times
+- Assess impact of different comparison strategies
 
 
 ## Project Structure
@@ -185,8 +214,9 @@ Improve eval realism/
 │   └── sanity_checks/
 │       ├── basic_sanity_checks.py        # Automated validation checks
 │       ├── diagnose_bradley_terry_convergence.py  # Convergence diagnostics
-│       ├── transitivity_test.py      # Test logical consistency
-│       └── order_consistency_test.py # Test for positional bias
+│       ├── transitivity_test.py          # Test logical consistency
+│       ├── order_consistency_test.py     # Test for positional bias
+│       └── leaderboard_correlation_test.py # Compare leaderboard rankings
 │
 ├── Utilities
 │   ├── aggregate_existing_results.py # Combine integration results
@@ -196,7 +226,7 @@ Improve eval realism/
     ├── datasets/                      # Input conversation datasets
     ├── leaderboards/                  # Calculated leaderboards
     ├── eval_logs/                     # Raw eval log files
-    ├── apollo_leaderboard_placement/  # Integration results with judge reasoning
+    ├── map_samples_on_leaderboard/  # Integration results with judge reasoning
     ├── clusters/                      # Topic clustering results
     ├── partial_transcripts/           # Processed transcript samples
     └── plots/                         # Visualization outputs

@@ -9,7 +9,10 @@ umap-learn>=0.5.4
 hdbscan>=0.8.33
 scikit-learn>=1.3.0
 
+# Data analysis and visualization
+scipy>=1.11.0
+matplotlib>=3.7.0
+
 # Optional: For notebook usage (if needed)
 # jupyter>=1.0.0
-# matplotlib>=3.7.0
 
