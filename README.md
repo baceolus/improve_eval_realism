@@ -28,6 +28,10 @@ It's zipped in order to respect licensing requirements of some samples used for 
 
 ## Quick Start
 
+> **Note:** Sample-lab utilities live inside `sample_lab/`. Run them from the
+> repository root via `python sample_lab/<script>.py`. The commands below use
+> that convention.
+
 ### 0. Unzip the dataset
 
 Unzip processe_cleaned_needham_dataset.json.zip (it's zipped for licensing reasons)
@@ -59,14 +63,14 @@ results = run_bradley_terry_competition(
 ### 2. Integrate New Samples into Existing Leaderboard
 
 ```bash
-python sample_integration.py <input_file> --model <model_name>
+python sample_lab/sample_integration.py <input_file> --model <model_name>
 ```
 
 The script accepts both `.eval` files and `.json` files as input:
 
 **From an inspect eval log:**
 ```bash
-python sample_integration.py 2025-10-19T14-32-43+03-00_oversight-subversion.eval \
+python sample_lab/sample_integration.py 2025-10-19T14-32-43+03-00_oversight-subversion.eval \
     --model openai/gpt-5-mini \
     --leaderboard leaderboards/gpt_5_mini_leaderboard.json \
     --output my_results
@@ -74,7 +78,7 @@ python sample_integration.py 2025-10-19T14-32-43+03-00_oversight-subversion.eval
 
 **From a JSON file with samples:**
 ```bash
-python sample_integration.py partial_transcripts/partial_transcripts_swe_gym_4458.json \
+python sample_lab/sample_integration.py sample_lab/partial_transcripts/partial_transcripts_swe_gym_4458.json \
     --model x-ai/grok-4-fast \
     --leaderboard leaderboards/grok_4_fast_leaderboard.json \
     --output swe_gym_4458
@@ -89,7 +93,7 @@ python sample_integration.py partial_transcripts/partial_transcripts_swe_gym_445
 1. Extracts/loads samples from the input file
 2. For each sample, runs comparisons against a leaderboard
 3. Calculates leaderboard placement (rank and percentile)
-4. Saves detailed results to `map_samples_on_leaderboard/`:
+4. Saves detailed results to `sample_lab/map_samples_on_leaderboard/`:
    - `<output_name>.json`: Full comparison data with judge reasoning
    - `<output_name>_summary.txt`: Human-readable placement summary
 
@@ -98,19 +102,19 @@ python sample_integration.py partial_transcripts/partial_transcripts_swe_gym_445
 **NEW: Complete end-to-end workflow** that combines leaderboard placement and clustering analysis:
 
 ```bash
-python analyze_eval_realism.py <eval_file> [--output-name <name>]
+python sample_lab/analyze_eval_realism.py <eval_file> [--output-name <name>]
 ```
 
 **Examples:**
 ```bash
 # Analyze a .eval file
-python analyze_eval_realism.py logs/my_eval.eval
+python sample_lab/analyze_eval_realism.py sample_lab/eval_logs/my_eval.eval
 
-# Analyze a JSON file with samples  
-python analyze_eval_realism.py partial_transcripts/my_samples.json
+# Analyze a JSON file with samples
+python sample_lab/analyze_eval_realism.py sample_lab/partial_transcripts/my_samples.json
 
 # Use custom output name
-python analyze_eval_realism.py my_eval.eval --output-name my_analysis
+python sample_lab/analyze_eval_realism.py sample_lab/eval_logs/my_eval.eval --output-name my_analysis
 ```
 
 **What it does:**
@@ -121,7 +125,7 @@ python analyze_eval_realism.py my_eval.eval --output-name my_analysis
 5. Saves all results to a single timestamped directory
 
 **Outputs:**
-All files are saved to `eval_analysis_results/<output_name>_<timestamp>/`:
+All files are saved to `sample_lab/eval_analysis_results/<output_name>_<timestamp>/`:
 - `<output_name>.json`: Full leaderboard placement data with judge reasoning
 - `<output_name>_summary.txt`: Human-readable placement summary
 - `eval_awareness_clusters.json`: Complete cluster data
@@ -137,10 +141,10 @@ This is the **recommended workflow** for analyzing eval realism of an Inspect ev
 For standalone clustering analysis of existing placement results:
 
 ```bash
-python cluster_eval_features.py
+python sample_lab/cluster_eval_features.py
 ```
 
-By default, this processes `map_samples_on_leaderboard/explanations_test.json` and saves results to `clusters/explanations_test_clusters.json`. You can modify the input file in the script's `main()` function.
+By default, this processes `sample_lab/map_samples_on_leaderboard/explanations_test.json` and saves results to `sample_lab/clusters/explanations_test_clusters.json`. You can modify the input file in the script's `main()` function.
 
 **What it does:**
 1. Extracts judge arguments from comparison data where samples appeared evaluation-like
@@ -197,18 +201,24 @@ Improve eval realism/
 ├── Core Rating System
 │   ├── bradley_terry.py               # Bradley-Terry MM algorithm implementation
 │   ├── calculate_leaderboard.py      # Full leaderboard calculation pipeline
-│   ├── sample_comparison.py          # LLM-based pairwise comparison logic
-│   └── sample_integration.py         # Adaptive integration for new samples
+│   └── sample_comparison.py          # LLM-based pairwise comparison logic
 │
-├── Analysis Tools
+├── Sample Lab (analysis workflows)
 │   ├── analyze_eval_realism.py       # ⭐ Integrated workflow (placement + clustering)
+│   ├── sample_integration.py         # Adaptive integration for new samples
 │   ├── cluster_eval_features.py      # BERTopic clustering of evaluation features
 │   ├── plot_turns_vs_percentile.py   # Visualization utilities
+│   ├── create_partial_transcripts.py # Create partial transcript samples
+│   ├── aggregate_existing_results.py # Combine integration results
+│   ├── partial_transcripts/          # Processed transcript samples
+│   ├── map_samples_on_leaderboard/   # Integration results with judge reasoning
+│   ├── eval_analysis_results/        # Results from analyze_eval_realism
+│   ├── clusters/                     # Topic clustering results
+│   └── plots/                        # Visualization outputs
 │
 ├── Data Processing
 │   ├── process_needham_dataset.py    # Dataset preprocessing utilities
-│   ├── extract_prompts_from_inspect_log.py  # Extract samples from eval logs
-│   └── create_partial_transcripts.py # Create partial transcript samples
+│   └── extract_prompts_from_inspect_log.py  # Extract samples from eval logs
 │
 ├── Quality Assurance
 │   └── sanity_checks/
@@ -219,17 +229,12 @@ Improve eval realism/
 │       └── leaderboard_correlation_test.py # Compare leaderboard rankings
 │
 ├── Utilities
-│   ├── aggregate_existing_results.py # Combine integration results
 │   └── SAMPLE_INTEGRATION_GUIDE.md   # Detailed integration guide
 │
 └── Data & Results
     ├── datasets/                      # Input conversation datasets
     ├── leaderboards/                  # Calculated leaderboards
-    ├── eval_logs/                     # Raw eval log files
-    ├── map_samples_on_leaderboard/  # Integration results with judge reasoning
-    ├── clusters/                      # Topic clustering results
-    ├── partial_transcripts/           # Processed transcript samples
-    └── plots/                         # Visualization outputs
+    └── eval_logs/                     # Root-level eval log files
 ```
 
 ## How It Works
