@@ -251,7 +251,6 @@ Improve eval realism/
 │   ├── compare_leaderboard_placements.py  # Compare samples across multiple evaluations
 │   ├── plot_turns_vs_percentile.py   # Visualization utilities
 │   ├── create_partial_transcripts.py # Create partial transcript samples
-│   ├── aggregate_existing_results.py # Combine integration results
 │   ├── partial_transcripts/          # Processed transcript samples
 │   ├── samples_mapped_to_leaderboard/   # Integration results with judge reasoning
 │   ├── eval_analysis_results/        # Results from analyze_eval_realism

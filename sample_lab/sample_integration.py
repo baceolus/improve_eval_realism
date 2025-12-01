@@ -103,7 +103,7 @@ def load_sample_by_id(sample_id: str, dataset_path: str = None) -> Optional[Dict
     """
     if dataset_path is None:
         script_dir = Path(__file__).parent.parent
-        dataset_path = script_dir / "datasets" / "processed_needham_dataset.json"
+        dataset_path = script_dir / "datasets" / "adapted_needham_dataset.json"
     
     dataset_path = Path(dataset_path)
     

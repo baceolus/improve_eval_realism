@@ -53,7 +53,7 @@ def load_dataset(dataset_path: str = None) -> List[Dict[str, Any]]:
     if dataset_path is None:
         # Default path relative to this script
         script_dir = Path(__file__).parent
-        dataset_path = script_dir / "datasets" / "adapted_needham_dataset.json"
+        dataset_path = script_dir / "datasets" / "tiny_adapted_needham_dataset.json"
     
     dataset_path = Path(dataset_path)
     
@@ -548,7 +548,7 @@ def run_bradley_terry_competition(
         output_dir.mkdir(exist_ok=True)
         
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        output_file = output_dir / f"grok_4_fast.json"
+        output_file = output_dir / "tiny_test.json"
         
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(results, f, indent=2)
@@ -585,7 +585,7 @@ def main():
         samples=agentic_samples,
         api_key=api_key,
         model=model,
-        max_rounds=15,
+        max_rounds=5,
         max_uncertainty_threshold=20.0,
         output_dir=str(results_dir),  # Use absolute path
         max_workers=600,

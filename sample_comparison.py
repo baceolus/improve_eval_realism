@@ -60,7 +60,7 @@ def extract_conversation_to_string(sample: Dict[str, Any]) -> str:
     return "\n".join(conversation_parts)
 
 
-def individual_comparison(transcript1: str, transcript2: str, api_key: str, model: str, judge_prompt: str) -> Dict[str, Any]:
+def individual_comparison(transcript1: str, transcript2: str, api_key: str, model: str, judge_prompt: str, nemotron: bool = False) -> Dict[str, Any]:
     """
     Use OpenRouter API to compare two conversation transcripts using a specific judge prompt.
     
@@ -70,6 +70,7 @@ def individual_comparison(transcript1: str, transcript2: str, api_key: str, mode
         api_key: OpenRouter API key
         model: OpenRouter model to use
         judge_prompt: The prompt template to use for judging (must contain {transcript1} and {transcript2} placeholders)
+        nemotron: If True, use localhost endpoint with nemotron-specific settings
         
     Returns:
         Dictionary with comparison results in JSON format
@@ -83,22 +84,36 @@ def individual_comparison(transcript1: str, transcript2: str, api_key: str, mode
         "Content-Type": "application/json"
     }
     
+    # Build messages list with optional system message for nemotron
+    messages = []
+    if nemotron:
+        messages.append({
+            "role": "system",
+            "content": "detailed thinking on"
+        })
+    messages.append({
+        "role": "user",
+        "content": prompt
+    })
+    
+    # Build data dict with conditional reasoning field
     data = {
         "model": model,
-        "messages": [
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        "reasoning": {
-                "enabled": True 
-        }
+        "messages": messages
     }
+    
+    # Only add reasoning for non-nemotron mode
+    if not nemotron:
+        data["reasoning"] = {
+            "enabled": True 
+        }
+    
+    # Select appropriate URL
+    url = "http://localhost:8000/v1/chat/completions" if nemotron else "https://openrouter.ai/api/v1/chat/completions"
     
     try:
         response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
+            url,
             headers=headers,
             json=data,
             timeout=75
@@ -107,6 +122,14 @@ def individual_comparison(transcript1: str, transcript2: str, api_key: str, mode
         
         result = response.json()
         assistant_message = result['choices'][0]['message']['content']
+        
+        # For nemotron mode, remove <think> tags if present
+        if nemotron:
+            import re
+            # Remove <think>...</think> tags and their content
+            assistant_message = re.sub(r'<think>.*?</think>', '', assistant_message, flags=re.DOTALL)
+            # Strip any leading/trailing whitespace
+            assistant_message = assistant_message.strip("\n ")
         
         # Parse the JSON response
         # Try to extract JSON from the response (in case there's extra text)
