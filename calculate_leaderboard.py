@@ -69,7 +69,7 @@ def load_dataset(dataset_path: str = None) -> List[Dict[str, Any]]:
     return samples
 
 
-def compare_random_samples(samples: List[Dict[str, Any]], api_key: str, model: str, agentic_only: bool = False) -> Dict[str, Any]:
+def compare_random_samples(samples: List[Dict[str, Any]], api_key: str, model: str, agentic_only: bool = False, nemotron: bool = False) -> Dict[str, Any]:
     """
     Randomly select 2 samples from the dataset and compare their realism.
     
@@ -78,6 +78,7 @@ def compare_random_samples(samples: List[Dict[str, Any]], api_key: str, model: s
         api_key: OpenRouter API key
         model: OpenRouter model to use
         agentic_only: If True, only compare samples from agentic categories
+        nemotron: If True, use localhost endpoint with nemotron-specific settings
         
     Returns:
         Dictionary containing comparison result
@@ -95,7 +96,7 @@ def compare_random_samples(samples: List[Dict[str, Any]], api_key: str, model: s
 
 
     # Compare using LLM
-    comparison_result = compare_transcripts_realism(transcript1, transcript2, api_key, model)
+    comparison_result = compare_transcripts_realism(transcript1, transcript2, api_key, model, nemotron=nemotron)
     
     return {
         "sample1_id": sample1.get('id'),
@@ -224,7 +225,8 @@ def perform_comparison(
     sample2: Dict[str, Any],
     api_key: str,
     model: str,
-    return_details: bool = False
+    return_details: bool = False,
+    nemotron: bool = False
 ) -> Any:
     """
     Compare two samples and return result.
@@ -238,6 +240,7 @@ def perform_comparison(
         api_key: OpenRouter API key
         model: Model to use
         return_details: If True, return tuple of (result, full_comparison_data)
+        nemotron: If True, use localhost endpoint with nemotron-specific settings
     
     Returns:
         If return_details is False: Result string ("A", "B", "tie", or "error")
@@ -248,7 +251,7 @@ def perform_comparison(
     transcript1 = extract_conversation_to_string(sample1)
     transcript2 = extract_conversation_to_string(sample2)
     
-    comparison_result = compare_transcripts_realism(transcript1, transcript2, api_key, model)
+    comparison_result = compare_transcripts_realism(transcript1, transcript2, api_key, model, nemotron=nemotron)
     
     # Parse result from the new format (uses "final_winner" instead of "more_realistic")
     final_winner = comparison_result.get("final_winner", "tie").lower()
@@ -274,7 +277,8 @@ def compare_pair_wrapper(
     samples: List[Dict[str, Any]],
     api_key: str,
     model: str,
-    comparison_history: set
+    comparison_history: set,
+    nemotron: bool = False
 ) -> Tuple[str, str, str, Optional[str], int, int, Optional[Dict[str, Any]]]:
     """
     Wrapper function for parallel comparison execution.
@@ -286,6 +290,7 @@ def compare_pair_wrapper(
         api_key: OpenRouter API key
         model: Model to use
         comparison_history: Set of already compared pairs
+        nemotron: If True, use localhost endpoint with nemotron-specific settings
     
     Returns:
         Tuple of (sample1_id, sample2_id, result, error, idx1, idx2, detailed_comparison_data)
@@ -300,7 +305,7 @@ def compare_pair_wrapper(
         return sample1['id'], sample2['id'], "skip", "Duplicate comparison", idx1, idx2, None
     
     try:
-        result, detailed_data = perform_comparison(sample1, sample2, api_key, model, return_details=True)
+        result, detailed_data = perform_comparison(sample1, sample2, api_key, model, return_details=True, nemotron=nemotron)
         return sample1['id'], sample2['id'], result, None, idx1, idx2, detailed_data
     except Exception as e:
         return sample1['id'], sample2['id'], "error", str(e), idx1, idx2, None
@@ -314,7 +319,8 @@ def run_bradley_terry_competition(
     max_uncertainty_threshold,
     output_dir: Optional[str] = None,
     max_workers: int = 10,
-    comparison_timeout: float = 300.0
+    comparison_timeout: float = 300.0,
+    nemotron: bool = False
 ) -> Dict[str, Any]:
     """
     Run a Bradley-Terry competition to rate samples by realism with parallel comparisons.
@@ -334,6 +340,7 @@ def run_bradley_terry_competition(
         output_dir: Directory to save results (None = don't save)
         max_workers: Maximum number of parallel workers for comparisons
         comparison_timeout: Maximum time (in seconds) to wait for a single comparison (default: 300)
+        nemotron: If True, use localhost endpoint with nemotron-specific settings
     
     Returns:
         Dictionary with final ratings, uncertainties, comparison history (simple),
@@ -384,7 +391,7 @@ def run_bradley_terry_competition(
             future_to_pair = {
                 executor.submit(
                     compare_pair_wrapper,
-                    idx1, idx2, samples, api_key, model, comparison_history
+                    idx1, idx2, samples, api_key, model, comparison_history, nemotron
                 ): (idx1, idx2)
                 for idx1, idx2 in pairs
             }

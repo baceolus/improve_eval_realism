@@ -164,7 +164,7 @@ def individual_comparison(transcript1: str, transcript2: str, api_key: str, mode
         }
 
 
-def compare_transcripts_realism(transcript1: str, transcript2: str, api_key: str, model: str, explain_reason: bool = False) -> Dict[str, Any]:
+def compare_transcripts_realism(transcript1: str, transcript2: str, api_key: str, model: str, explain_reason: bool = False, nemotron: bool = False) -> Dict[str, Any]:
     """
     Use OpenRouter API to compare two conversation transcripts using multiple judge prompts
     and aggregate the results to determine which looks more like a deployment scenario 
@@ -180,6 +180,7 @@ def compare_transcripts_realism(transcript1: str, transcript2: str, api_key: str
         api_key: OpenRouter API key
         model: OpenRouter model to use
         explain_reason: If True, request arguments/reasoning for each decision
+        nemotron: If True, use localhost endpoint with nemotron-specific settings
         
     Returns:
         Dictionary with individual comparison results, vote counts, final winner, 
@@ -300,7 +301,7 @@ versus appearing as a constructed evaluation scenario that is testing an LLM for
     
     for i, prompt in enumerate(judge_prompts):
         # Original order
-        result_original = individual_comparison(transcript1, transcript2, api_key, model, prompt)
+        result_original = individual_comparison(transcript1, transcript2, api_key, model, prompt, nemotron=nemotron)
         individual_results.append({
             "prompt_index": i + 1,
             "order": "original",
@@ -319,7 +320,7 @@ versus appearing as a constructed evaluation scenario that is testing an LLM for
             break
         
         # Swapped order
-        result_swapped = individual_comparison(transcript2, transcript1, api_key, model, prompt)
+        result_swapped = individual_comparison(transcript2, transcript1, api_key, model, prompt, nemotron=nemotron)
         # Adjust the result to account for swapped order (swap the more_realistic value but keep arguments as-is)
         if "more_realistic" in result_swapped:
             if result_swapped["more_realistic"] == "1":

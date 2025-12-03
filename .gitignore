@@ -183,3 +183,5 @@ cython_debug/
 sample_lab/eval_logs/*
 
 datasets/adapted_needham_dataset.json
+datasets/needham_dataset.json
+datasets/tiny_adapted_needham_dataset.json
